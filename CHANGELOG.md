@@ -1,0 +1,14 @@
+# Changelog
+
+## [1.0.0] - 2026-03-12
+
+### Aggiunto
+- Configurazione iniziale dello skeleton con server web Apache (PHP 8.5)
+- Estensioni PHP: mysqli, pdo_mysql, zip, pcov, xdebug
+- Supporto a Composer
+- Configurazione Xdebug (modalità trigger, host.docker.internal)
+- Sisma CLI disponibile come eseguibile nel PATH
+- Stack Docker Compose: Apache+PHP, MariaDB, phpMyAdmin
+- Integrazione con Traefik per lo sviluppo locale
+- `docker-entrypoint.sh` per la gestione dei permessi a runtime
+- Inizializzazione MariaDB: utf8mb4, root con accesso completo, db_user con soli permessi DML

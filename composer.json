@@ -1,0 +1,23 @@
+{
+    "name": "valentinodelapa/sisma-skeletron-apache",
+    "description": "Skeleton project for SismaFramework with Apache web server",
+    "type": "project",
+    "version": "1.0.0",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Valentino de Lapa",
+            "email": "valentino.delapa@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.5",
+        "ext-mysqli": "*",
+        "ext-pdo_mysql": "*",
+        "ext-zip": "*"
+    },
+    "require-dev": {
+        "ext-xdebug": "*",
+        "ext-pcov": "*"
+    }
+}
