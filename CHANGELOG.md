@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.1] - 2026-03-14
+
+### Modificato
+- Configurazione Xdebug agnostica rispetto all'IDE (`idekey=XDEBUG`)
+
 ## [1.0.0] - 2026-03-12
 
 ### Aggiunto
