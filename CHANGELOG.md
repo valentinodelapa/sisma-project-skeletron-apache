@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.2] - 2026-03-15
+
+### Modificato
+- Rimossa la direttiva `zend_extension=xdebug` da `xdebug.ini` (l'estensione è già abilitata via `docker-php-ext-enable` nel Dockerfile)
+
 ## [1.0.1] - 2026-03-14
 
 ### Modificato
