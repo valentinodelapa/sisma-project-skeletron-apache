@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.3] - 2026-03-19
+
+### Modificato
+- Rimossi gli `--exclude` per i file git (`*.git*`, `*.github*`, `.gitattributes`, `.gitignore`) dal workflow di release, in modo che vengano inclusi nell'archivio ZIP generato
+
 ## [1.0.2] - 2026-03-15
 
 ### Modificato
