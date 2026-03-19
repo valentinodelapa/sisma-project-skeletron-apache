@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.4] - 2026-03-19
+
+### Modificato
+- Workflow di release: rimosso il remote `origin` dalla repository inclusa nell'archivio ZIP, in modo che non punti allo skeleton
+- Workflow di release: aggiunto `--exclude=".github/*"` per escludere la cartella `.github/` dall'archivio ZIP
+
 ## [1.0.3] - 2026-03-19
 
 ### Modificato
