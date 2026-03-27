@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.5] - 2026-03-27
+
+### Corretto
+- `docker-entrypoint.sh`: convertiti i fine riga da CRLF a LF per compatibilità con i container Linux
+- `skeletron_apache.sql`: rimossa la `REVOKE ALL PRIVILEGES` su `db_user`, non necessaria poiché MariaDB non assegna privilegi di default sullo schema
+
 ## [1.0.4] - 2026-03-19
 
 ### Modificato
