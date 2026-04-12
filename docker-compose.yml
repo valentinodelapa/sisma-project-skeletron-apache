@@ -3,6 +3,7 @@ services:
   app:
     build: .
     container_name: skeletron_apache_app
+    user: root
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:

@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.0.5] - 2026-04-12
+
+### Corretto
+
+- `docker-compose.yml`: aggiunto `user: root` al servizio `app` per garantire i permessi di scrittura sulle cartelle montate da Windows
+
 ## [1.0.5] - 2026-03-27
 
 ### Corretto

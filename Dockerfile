@@ -1,13 +1,13 @@
 FROM php:8.5-apache
 
 # Dipendenze di sistema
-RUN apt-get update && apt-get install -y unzip git libzip-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y unzip git libzip-dev libpng-dev libjpeg-dev libfreetype6-dev && rm -rf /var/lib/apt/lists/*
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Estensioni PHP
-RUN docker-php-ext-install mysqli pdo pdo_mysql zip && docker-php-ext-enable mysqli
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg && docker-php-ext-install mysqli pdo pdo_mysql zip gd && docker-php-ext-enable mysqli
 RUN pecl install pcov && docker-php-ext-enable pcov
 RUN pecl install xdebug && docker-php-ext-enable xdebug
 RUN a2enmod rewrite
