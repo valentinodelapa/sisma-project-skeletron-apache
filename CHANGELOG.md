@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0] - 2026-06-04
+
+### Aggiunto
+- `setup.sh`: script interattivo per l'inizializzazione automatica del progetto (rinomina file, aggiornamento credenziali, avvio Docker, esecuzione `sisma install`)
+- `README.md`: documentata la procedura di setup automatico tramite `setup.sh` in alternativa al metodo manuale
+
 ## [1.0.5] - 2026-04-12
 
 ### Corretto

@@ -46,7 +46,20 @@ docker exec -it skeletron_apache_app sisma install NomeProgetto
 
 ## Utilizzo come base per un nuovo progetto
 
+### Metodo automatico (consigliato)
+
+Esegui lo script interattivo dalla root del progetto:
+
+```bash
+bash setup.sh
+```
+
+Lo script chiederà il nome del progetto (in snake\_case o kebab-case) e le credenziali del database, aggiornerà tutti i file di configurazione, avvierà i container e lancerà `sisma install` automaticamente.
+
+### Metodo manuale
+
 1.  Scarica la release desiderata
-2.  Aggiorna le credenziali del database in `docker-compose.yml` e `skeletron_apache.sql`
-3.  Esegui `docker compose up -d`
-4.  Avvia l'installazione con il comando `sisma install`
+2.  Rinomina `skeletron_apache.sql` con il nome del tuo progetto e aggiorna i riferimenti in `docker-compose.yml`
+3.  Aggiorna le credenziali del database in `docker-compose.yml` e nel file `.sql` rinominato
+4.  Esegui `docker compose up -d`
+5.  Avvia l'installazione con il comando `sisma install`
