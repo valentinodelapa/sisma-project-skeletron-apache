@@ -26,9 +26,12 @@ jobs:
           TAG_NAME="${{ github.ref_name }}"
           ZIP_NAME="${{ github.event.repository.name }}-${TAG_NAME}.zip"
 
-          git branch master origin/master 2>/dev/null || true
-          git branch develop origin/develop 2>/dev/null || true
-          git remote remove origin
+          rm -rf .git
+          git init
+          git config user.email "actions@github.com"
+          git config user.name "GitHub Actions"
+          git add .
+          git commit -m "Initial commit"
 
           zip -r $ZIP_NAME . \
             --exclude=".github/*" \

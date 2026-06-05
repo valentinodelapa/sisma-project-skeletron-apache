@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.1] - 2026-06-05
+
+### Corretto
+- Workflow di release: la repository inclusa nell'archivio ZIP è ora vergine (singolo "Initial commit"), senza la history dei commit dello skeleton
+
 ## [1.1.0] - 2026-06-04
 
 ### Aggiunto
