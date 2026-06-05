@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.2] - 2026-06-05
+
+### Corretto
+- Workflow di release: l'archivio ZIP non include più la directory `.git`; la repository viene inizializzata da `setup.sh` al termine del setup, con un "Initial commit" che cattura il progetto già configurato
+- `setup.sh`: aggiunta inizializzazione della repository git e creazione del primo commit al termine del setup
+
 ## [1.1.1] - 2026-06-05
 
 ### Corretto

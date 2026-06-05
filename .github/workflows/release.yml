@@ -27,11 +27,6 @@ jobs:
           ZIP_NAME="${{ github.event.repository.name }}-${TAG_NAME}.zip"
 
           rm -rf .git
-          git init
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          git add .
-          git commit -m "Initial commit"
 
           zip -r $ZIP_NAME . \
             --exclude=".github/*" \
