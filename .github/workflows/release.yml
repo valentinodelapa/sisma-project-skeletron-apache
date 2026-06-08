@@ -26,7 +26,12 @@ jobs:
           TAG_NAME="${{ github.ref_name }}"
           ZIP_NAME="${{ github.event.repository.name }}-${TAG_NAME}.zip"
 
+          SUBMODULE_URL=$(git config --file .gitmodules submodule."www/SismaFramework".url)
           rm -rf .git
+          rm -rf www/SismaFramework
+          rm -f .gitmodules
+          git init
+          git submodule add "$SUBMODULE_URL" www/SismaFramework
 
           zip -r $ZIP_NAME . \
             --exclude=".github/*" \

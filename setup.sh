@@ -166,6 +166,5 @@ printf "  phpMyAdmin   : http://db.%s.localhost\n" "$NEW_KEBAB"
 echo ""
 
 rm -- "${BASH_SOURCE[0]}"
-git init
 git add .
 git commit -m "Initial commit"

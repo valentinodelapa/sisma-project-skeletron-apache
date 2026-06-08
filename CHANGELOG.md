@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.3] - 2026-06-08
+
+### Corretto
+- Workflow di release: la repository vergine nell'archivio ZIP include ora SismaFramework correttamente registrato come sottomodulo; il primo commit viene creato da `setup.sh` al termine del setup, usando l'identità git dell'utente
+- `setup.sh`: rimossa l'inizializzazione git (già gestita dal workflow); il commit finale usa il repo già inizializzato
+
 ## [1.1.2] - 2026-06-05
 
 ### Corretto
