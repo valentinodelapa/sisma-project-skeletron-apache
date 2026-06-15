@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.4] - 2026-06-15
+
+### Corretto
+- `setup.sh`: rimosso il passaggio di aggiornamento di `composer.json`, non presente nell'archivio di release; riallineati i numeri dei passi
+
 ## [1.1.3] - 2026-06-08
 
 ### Corretto

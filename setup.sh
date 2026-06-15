@@ -112,17 +112,13 @@ rif "docker-compose.yml" "MARIADB_USER: db_user"                "MARIADB_USER: $
 rif "docker-compose.yml" "MARIADB_PASSWORD: db_password"        "MARIADB_PASSWORD: ${DB_PASS}"
 ok "docker-compose.yml aggiornato"
 
-# ─── 6. Aggiorna composer.json ────────────────────────────────────────────────
-rif "composer.json" "sisma-skeletron-${VARIANT}" "$PROJECT_KEBAB"
-ok "composer.json aggiornato"
-
-# ─── 7. Avvia Docker ──────────────────────────────────────────────────────────
+# ─── 6. Avvia Docker ──────────────────────────────────────────────────────────
 echo ""
 info "Avvio dei container Docker..."
 docker compose up -d
 ok "Container avviati"
 
-# ─── 8. Attendi che il DB sia pronto ─────────────────────────────────────────
+# ─── 7. Attendi che il DB sia pronto ─────────────────────────────────────────
 DB_CONTAINER="${NEW_SNAKE}_db"
 echo ""
 info "Attendo che il database sia pronto ($DB_CONTAINER)..."
@@ -142,7 +138,7 @@ done
 echo ""
 ok "Database pronto"
 
-# ─── 9. Esegui sisma install ──────────────────────────────────────────────────
+# ─── 8. Esegui sisma install ──────────────────────────────────────────────────
 APP_CONTAINER="${NEW_SNAKE}_app"
 
 echo ""
