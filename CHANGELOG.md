@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.0] - 2026-06-16
+
+### Aggiunto
+- `setup.sh`: esecuzione automatica di `composer install` in `/var/www/html/` al termine di `sisma install`
+
 ## [1.1.6] - 2026-06-16
 
 ### Corretto

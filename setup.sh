@@ -156,6 +156,12 @@ echo ""
 [ -n "${MSYSTEM:-}" ] && TTY_FLAG="-i" || TTY_FLAG="-it"
 docker exec $TTY_FLAG "$APP_CONTAINER" sisma install "$PROJECT_PASCAL"
 
+# ─── 9. Composer install ──────────────────────────────────────────────────────
+echo ""
+info "Eseguo composer install in /var/www/html/ ..."
+docker exec "$APP_CONTAINER" composer install --working-dir=/var/www/html
+ok "Dipendenze Composer installate"
+
 # ─── Fine ─────────────────────────────────────────────────────────────────────
 echo ""
 ok "Setup completato!"
