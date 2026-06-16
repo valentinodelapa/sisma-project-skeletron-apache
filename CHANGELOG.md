@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.1] - 2026-06-16
+
+### Corretto
+- `setup.sh`: `composer install` ora usa `docker exec -w /var/www/html` invece di `--working-dir`; il flag `--working-dir` veniva espanso dalla shell host e su Git Bash/MSYS2 il path veniva tradotto in percorso Windows (`C:/Program Files/Git/var/www/html`)
+
 ## [1.2.0] - 2026-06-16
 
 ### Aggiunto

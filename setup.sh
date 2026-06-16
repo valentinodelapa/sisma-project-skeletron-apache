@@ -159,7 +159,7 @@ docker exec $TTY_FLAG "$APP_CONTAINER" sisma install "$PROJECT_PASCAL"
 # ─── 9. Composer install ──────────────────────────────────────────────────────
 echo ""
 info "Eseguo composer install in /var/www/html/ ..."
-docker exec "$APP_CONTAINER" composer install --working-dir=/var/www/html
+docker exec -w /var/www/html "$APP_CONTAINER" composer install
 ok "Dipendenze Composer installate"
 
 # ─── Fine ─────────────────────────────────────────────────────────────────────
