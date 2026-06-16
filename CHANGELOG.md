@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.6] - 2026-06-16
+
+### Corretto
+- `setup.sh`: rilevamento dell'ambiente Git Bash / MSYS2 tramite variabile `MSYSTEM` per la gestione del flag TTY di `docker exec`; usa `-i` su Git Bash (dove l'allocazione TTY non è supportata da Docker), `-it` negli altri ambienti
+
 ## [1.1.5] - 2026-06-16
 
 ### Corretto

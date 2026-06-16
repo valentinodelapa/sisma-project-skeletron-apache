@@ -152,7 +152,8 @@ printf "    User     : %s\n"  "$DB_USER"
 printf "    Password : %s\n"  "$DB_PASS"
 echo ""
 
-[ -t 0 ] && TTY_FLAG="-it" || TTY_FLAG="-i"
+# Git Bash / MSYS2 su Windows non supporta l'allocazione TTY via Docker
+[ -n "${MSYSTEM:-}" ] && TTY_FLAG="-i" || TTY_FLAG="-it"
 docker exec $TTY_FLAG "$APP_CONTAINER" sisma install "$PROJECT_PASCAL"
 
 # ─── Fine ─────────────────────────────────────────────────────────────────────
