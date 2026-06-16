@@ -114,6 +114,7 @@ ok "docker-compose.yml aggiornato"
 
 # ─── 6. Avvia Docker ──────────────────────────────────────────────────────────
 echo ""
+docker info > /dev/null 2>&1 || die "Docker non è in esecuzione. Avvia Docker Desktop e riprova."
 info "Avvio dei container Docker..."
 docker compose up -d
 ok "Container avviati"
@@ -151,7 +152,8 @@ printf "    User     : %s\n"  "$DB_USER"
 printf "    Password : %s\n"  "$DB_PASS"
 echo ""
 
-docker exec -it "$APP_CONTAINER" sisma install "$PROJECT_PASCAL"
+[ -t 0 ] && TTY_FLAG="-it" || TTY_FLAG="-i"
+docker exec $TTY_FLAG "$APP_CONTAINER" sisma install "$PROJECT_PASCAL"
 
 # ─── Fine ─────────────────────────────────────────────────────────────────────
 echo ""

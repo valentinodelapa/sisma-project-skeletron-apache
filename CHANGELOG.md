@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.5] - 2026-06-16
+
+### Corretto
+- `setup.sh`: rilevamento automatico del TTY per `docker exec`; usa `-it` se stdin è un terminale reale, `-i` altrimenti (compatibilità con Git Bash e ambienti non-TTY)
+
 ## [1.1.4] - 2026-06-15
 
 ### Corretto
