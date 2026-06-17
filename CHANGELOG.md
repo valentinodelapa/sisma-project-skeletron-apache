@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.3] - 2026-06-17
+
+### Aggiornato
+- SismaFramework aggiornato alla versione `11.6.3`
+
 ## [1.2.2] - 2026-06-16
 
 ### Corretto
