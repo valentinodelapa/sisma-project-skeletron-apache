@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2.2] - 2026-06-16
+
+### Corretto
+- `setup.sh`: `composer install` ora eseguito tramite `bash -c "cd /var/www/html && composer install"` nel container; il flag `-w` di `docker exec` veniva anch'esso convertito da Git Bash/MSYS2 in percorso Windows, causando l'errore `Cwd must be an absolute path`
+
 ## [1.2.1] - 2026-06-16
 
 ### Corretto
