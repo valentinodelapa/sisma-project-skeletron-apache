@@ -63,6 +63,45 @@ printf "    snake_case : %s\n"  "$NEW_SNAKE"
 printf "    kebab-case : %s\n"  "$NEW_KEBAB"
 printf "    PascalCase : %s\n"  "$PROJECT_PASCAL"
 
+# ─── 1b. Sottomoduli aggiuntivi ───────────────────────────────────────────────
+SUBMODULES=()  # coppie "url|www/cartella"
+
+echo ""
+read -rp "Aggiungere ulteriori sottomoduli Git in www/? [s/N]: " _add_subs
+if [[ "$_add_subs" =~ ^[sS]$ ]]; then
+    echo ""
+    info "I sottomoduli verranno clonati in www/<nome-cartella>"
+    info "Lascia l'URL vuoto per terminare."
+    echo ""
+    while true; do
+        read -rp "  URL repository (o Invio per terminare): " _sub_url
+        _sub_url=$(echo "$_sub_url" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        [ -z "$_sub_url" ] && break
+        if ! echo "$_sub_url" | grep -qE '^(https?://|git@).+'; then
+            warn "URL non valido. Usa https://... o git@..."; continue
+        fi
+        while true; do
+            read -rp "  Nome cartella in www/: " _sub_folder
+            _sub_folder=$(echo "$_sub_folder" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            if [ -z "$_sub_folder" ]; then
+                warn "Il nome della cartella non può essere vuoto."; continue
+            fi
+            if ! echo "$_sub_folder" | grep -qE '^[a-zA-Z][a-zA-Z0-9_-]*$'; then
+                warn "Usa solo lettere, cifre, trattini e underscore."; continue
+            fi
+            _dup=0
+            for _s in "${SUBMODULES[@]}"; do
+                [[ "${_s##*|}" == "www/$_sub_folder" ]] && _dup=1 && break
+            done
+            [ "$_dup" -eq 1 ] && { warn "Cartella 'www/$_sub_folder' già aggiunta."; continue; }
+            break
+        done
+        SUBMODULES+=("${_sub_url}|www/${_sub_folder}")
+        ok "  → www/$_sub_folder"
+        echo ""
+    done
+fi
+
 # ─── 2. Credenziali database ──────────────────────────────────────────────────
 echo ""
 echo "Credenziali database:"
@@ -87,6 +126,12 @@ printf "  phpMyAdmin  : http://db.%s.localhost\n" "$NEW_KEBAB"
 printf "  DB root     : %s\n"      "[nascosta]"
 printf "  DB user     : %s\n"      "$DB_USER"
 printf "  DB password : %s\n"      "[nascosta]"
+if [ ${#SUBMODULES[@]} -gt 0 ]; then
+    printf "  Sottomoduli :\n"
+    for _s in "${SUBMODULES[@]}"; do
+        printf "    %s\n" "${_s##*|}"
+    done
+fi
 echo "──────────────────────────────────────────────────"
 echo ""
 read -rp "Procedere con il setup? [s/N]: " _confirm
@@ -161,6 +206,20 @@ echo ""
 info "Eseguo composer install in /var/www/html/ ..."
 docker exec "$APP_CONTAINER" bash -c "cd /var/www/html && composer install"
 ok "Dipendenze Composer installate"
+
+# ─── 10. Sottomoduli Git ──────────────────────────────────────────────────────
+if [ ${#SUBMODULES[@]} -gt 0 ]; then
+    echo ""
+    info "Aggiungo sottomoduli Git..."
+    for _s in "${SUBMODULES[@]}"; do
+        _sub_url="${_s%%|*}"
+        _sub_path="${_s##*|}"
+        git submodule add "$_sub_url" "$_sub_path"
+        ok "Sottomodulo aggiunto: $_sub_path"
+    done
+    git submodule update --init --recursive
+    ok "Sottomoduli inizializzati"
+fi
 
 # ─── Fine ─────────────────────────────────────────────────────────────────────
 echo ""

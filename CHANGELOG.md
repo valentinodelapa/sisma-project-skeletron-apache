@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.0] - 2026-06-17
+
+### Aggiunto
+- `setup.sh`: supporto a sottomoduli Git opzionali in `www/`; durante il setup viene chiesto se aggiungere sottomoduli, con raccolta interattiva di URL e nome cartella, validazione e deduplicazione; i sottomoduli vengono aggiunti e inizializzati al termine dell'installazione
+
 ## [1.2.3] - 2026-06-17
 
 ### Aggiornato
