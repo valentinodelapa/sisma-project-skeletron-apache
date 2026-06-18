@@ -157,14 +157,28 @@ rif "docker-compose.yml" "MARIADB_USER: db_user"                "MARIADB_USER: $
 rif "docker-compose.yml" "MARIADB_PASSWORD: db_password"        "MARIADB_PASSWORD: ${DB_PASS}"
 ok "docker-compose.yml aggiornato"
 
-# ─── 6. Avvia Docker ──────────────────────────────────────────────────────────
+# ─── 6. Sottomoduli Git ──────────────────────────────────────────────────────
+if [ ${#SUBMODULES[@]} -gt 0 ]; then
+    echo ""
+    info "Aggiungo sottomoduli Git..."
+    for _s in "${SUBMODULES[@]}"; do
+        _sub_url="${_s%%|*}"
+        _sub_path="${_s##*|}"
+        git submodule add "$_sub_url" "$_sub_path"
+        ok "Sottomodulo aggiunto: $_sub_path"
+    done
+    git submodule update --init --recursive
+    ok "Sottomoduli inizializzati"
+fi
+
+# ─── 7. Avvia Docker ──────────────────────────────────────────────────────────
 echo ""
 docker info > /dev/null 2>&1 || die "Docker non è in esecuzione. Avvia Docker Desktop e riprova."
 info "Avvio dei container Docker..."
 docker compose up -d
 ok "Container avviati"
 
-# ─── 7. Attendi che il DB sia pronto ─────────────────────────────────────────
+# ─── 8. Attendi che il DB sia pronto ─────────────────────────────────────────
 DB_CONTAINER="${NEW_SNAKE}_db"
 echo ""
 info "Attendo che il database sia pronto ($DB_CONTAINER)..."
@@ -184,7 +198,7 @@ done
 echo ""
 ok "Database pronto"
 
-# ─── 8. Esegui sisma install ──────────────────────────────────────────────────
+# ─── 9. Esegui sisma install ──────────────────────────────────────────────────
 APP_CONTAINER="${NEW_SNAKE}_app"
 
 echo ""
@@ -201,25 +215,11 @@ echo ""
 [ -n "${MSYSTEM:-}" ] && TTY_FLAG="-i" || TTY_FLAG="-it"
 docker exec $TTY_FLAG "$APP_CONTAINER" sisma install "$PROJECT_PASCAL"
 
-# ─── 9. Composer install ──────────────────────────────────────────────────────
+# ─── 10. Composer install ─────────────────────────────────────────────────────
 echo ""
 info "Eseguo composer install in /var/www/html/ ..."
 docker exec "$APP_CONTAINER" bash -c "cd /var/www/html && composer install"
 ok "Dipendenze Composer installate"
-
-# ─── 10. Sottomoduli Git ──────────────────────────────────────────────────────
-if [ ${#SUBMODULES[@]} -gt 0 ]; then
-    echo ""
-    info "Aggiungo sottomoduli Git..."
-    for _s in "${SUBMODULES[@]}"; do
-        _sub_url="${_s%%|*}"
-        _sub_path="${_s##*|}"
-        git submodule add "$_sub_url" "$_sub_path"
-        ok "Sottomodulo aggiunto: $_sub_path"
-    done
-    git submodule update --init --recursive
-    ok "Sottomoduli inizializzati"
-fi
 
 # ─── Fine ─────────────────────────────────────────────────────────────────────
 echo ""

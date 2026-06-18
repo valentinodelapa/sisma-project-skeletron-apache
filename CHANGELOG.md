@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.1] - 2026-06-18
+
+### Corretto
+- `setup.sh`: i sottomoduli Git vengono ora aggiunti e inizializzati prima dell'avvio di Docker (step 6), in modo che siano disponibili al momento dell'esecuzione di `sisma install`; in precedenza venivano aggiunti dopo `composer install`, rendendo le estensioni dei sottomoduli invisibili all'installer
+
 ## [1.3.0] - 2026-06-17
 
 ### Aggiunto
