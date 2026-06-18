@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0] - 2026-06-18
+
+### Aggiunto
+- `setup.sh`: prima di eseguire `sisma install` viene ora chiesto se passare l'opzione `--module=<nome>` al comando, per limitare l'esecuzione al modulo specificato
+
+### Aggiornato
+- SismaFramework aggiornato alla versione `11.7.0`
+
 ## [1.3.1] - 2026-06-18
 
 ### Corretto

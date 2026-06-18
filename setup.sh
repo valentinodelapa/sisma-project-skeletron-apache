@@ -202,6 +202,19 @@ ok "Database pronto"
 APP_CONTAINER="${NEW_SNAKE}_app"
 
 echo ""
+read -rp "Eseguire 'sisma install' con l'opzione --module? [s/N]: " _use_module
+MODULE_FLAG=""
+if [[ "$_use_module" =~ ^[sS]$ ]]; then
+    while true; do
+        read -rp "  Nome modulo: " _module_name
+        _module_name=$(echo "$_module_name" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        [ -z "$_module_name" ] && { warn "Il nome del modulo non può essere vuoto."; continue; }
+        break
+    done
+    MODULE_FLAG="--module=${_module_name}"
+fi
+
+echo ""
 info "Avvio installazione nel container $APP_CONTAINER..."
 echo ""
 warn "Se l'installer chiede le credenziali del database, usa questi valori:"
@@ -213,7 +226,7 @@ echo ""
 
 # Git Bash / MSYS2 su Windows non supporta l'allocazione TTY via Docker
 [ -n "${MSYSTEM:-}" ] && TTY_FLAG="-i" || TTY_FLAG="-it"
-docker exec $TTY_FLAG "$APP_CONTAINER" sisma install "$PROJECT_PASCAL"
+docker exec $TTY_FLAG "$APP_CONTAINER" sisma install "$PROJECT_PASCAL" $MODULE_FLAG
 
 # ─── 10. Composer install ─────────────────────────────────────────────────────
 echo ""
