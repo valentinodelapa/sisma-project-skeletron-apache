@@ -21,6 +21,7 @@ Skeleton Docker per progetti basati su SismaFramework con server web Apache.
 ## Avvio
 
 ```bash
+cp .env.example .env
 docker compose up -d
 ```
 
@@ -28,13 +29,15 @@ L'applicazione sarà disponibile su `http://skeletron-apache.localhost` e phpMyA
 
 ## Credenziali database
 
-| Parametro       | Valore             |
-|-----------------|--------------------|
-| Host            | `skeletron_apache_db` |
+Le credenziali (e la passphrase di cifratura) sono lette dal file `.env` (non versionato, copiato da `.env.example`), che `docker-compose.yml` rende disponibile ai container tramite `env_file`. Senza `.env`, `docker compose up -d` non si avvia.
+
+| Parametro       | Valore di default (`.env.example`) |
+|-----------------|-------------------------------------|
+| Host            | `db`               |
 | Database        | `skeletron_apache` |
 | Utente          | `db_user`          |
-| Password        | `db_password`      |
-| Password root   | `root_password`    |
+| Password        | `change_me_db_password` |
+| Password root   | `change_me_root_password` |
 
 ## Sisma CLI
 
@@ -60,6 +63,6 @@ Lo script chiederà il nome del progetto (in snake\_case o kebab-case) e le cred
 
 1.  Scarica la release desiderata
 2.  Rinomina `skeletron_apache.sql` con il nome del tuo progetto e aggiorna i riferimenti in `docker-compose.yml`
-3.  Aggiorna le credenziali del database in `docker-compose.yml` e nel file `.sql` rinominato
+3.  Copia `.env.example` in `.env` e aggiorna le credenziali del database (e la passphrase di cifratura) lì, oltre che nel file `.sql` rinominato
 4.  Esegui `docker compose up -d`
-5.  Avvia l'installazione con il comando `sisma install`
+5.  Avvia l'installazione con il comando `sisma install` (le credenziali nel container sono già configurate tramite `.env`: l'installer salta automaticamente la richiesta interattiva)

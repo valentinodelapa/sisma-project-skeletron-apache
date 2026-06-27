@@ -149,13 +149,24 @@ rif "$NEW_SQL" "'db_user'"   "'${DB_USER}'"
 ok "$OLD_SQL → $NEW_SQL (aggiornato)"
 
 # ─── 5. Aggiorna docker-compose.yml ──────────────────────────────────────────
-rif "docker-compose.yml" "$OLD_SNAKE"                           "$NEW_SNAKE"
-rif "docker-compose.yml" "$OLD_KEBAB"                           "$NEW_KEBAB"
-rif "docker-compose.yml" "MARIADB_ROOT_PASSWORD: root_password" "MARIADB_ROOT_PASSWORD: ${ROOT_PASS}"
-rif "docker-compose.yml" "MYSQL_ROOT_PASSWORD: root_password"   "MYSQL_ROOT_PASSWORD: ${ROOT_PASS}"
-rif "docker-compose.yml" "MARIADB_USER: db_user"                "MARIADB_USER: ${DB_USER}"
-rif "docker-compose.yml" "MARIADB_PASSWORD: db_password"        "MARIADB_PASSWORD: ${DB_PASS}"
+# Le credenziali non vengono più scritte qui: docker-compose.yml legge da .env
+# tramite ${...} ed env_file, quindi restano identiche per ogni progetto.
+rif "docker-compose.yml" "$OLD_SNAKE" "$NEW_SNAKE"
+rif "docker-compose.yml" "$OLD_KEBAB" "$NEW_KEBAB"
 ok "docker-compose.yml aggiornato"
+
+# ─── 5b. Genera il file .env ──────────────────────────────────────────────────
+# Generata qui (non richiesta all'utente) e scritta solo in .env, mai in un file
+# committato: SismaFramework la legge via getenv() in Config/configFramework.php.
+ENCRYPTION_PASSPHRASE="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 64 || true)"
+
+cp .env.example .env
+rif ".env" "DB_ROOT_PASSWORD=change_me_root_password"             "DB_ROOT_PASSWORD=${ROOT_PASS}"
+rif ".env" "DATABASE_NAME=${OLD_SNAKE}"                            "DATABASE_NAME=${NEW_SNAKE}"
+rif ".env" "DATABASE_USERNAME=db_user"                             "DATABASE_USERNAME=${DB_USER}"
+rif ".env" "DATABASE_PASSWORD=change_me_db_password"               "DATABASE_PASSWORD=${DB_PASS}"
+rif ".env" "ENCRYPTION_PASSPHRASE=change_me_encryption_passphrase" "ENCRYPTION_PASSPHRASE=${ENCRYPTION_PASSPHRASE}"
+ok ".env generato (non versionato)"
 
 # ─── 6. Sottomoduli Git ──────────────────────────────────────────────────────
 if [ ${#SUBMODULES[@]} -gt 0 ]; then
@@ -216,12 +227,8 @@ fi
 
 echo ""
 info "Avvio installazione nel container $APP_CONTAINER..."
-echo ""
-warn "Se l'installer chiede le credenziali del database, usa questi valori:"
-printf "    Host     : %s\n"  "${NEW_SNAKE}_db"
-printf "    Database : %s\n"  "$NEW_SNAKE"
-printf "    User     : %s\n"  "$DB_USER"
-printf "    Password : %s\n"  "$DB_PASS"
+info "Le credenziali del database sono già disponibili come variabili d'ambiente"
+info "(da .env via env_file): l'installer le rileva e salta la richiesta interattiva."
 echo ""
 
 # Git Bash / MSYS2 su Windows non supporta l'allocazione TTY via Docker
@@ -240,6 +247,8 @@ ok "Setup completato!"
 echo ""
 printf "  Applicazione : http://%s.localhost\n"    "$NEW_KEBAB"
 printf "  phpMyAdmin   : http://db.%s.localhost\n" "$NEW_KEBAB"
+echo ""
+warn "Credenziali e chiave di cifratura salvate in .env (non versionato). Conservane una copia."
 echo ""
 
 rm -- "${BASH_SOURCE[0]}"

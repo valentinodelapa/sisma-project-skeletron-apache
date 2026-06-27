@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.0] - 2026-06-27
+
+### Aggiunto
+- `.env.example`: nuovo file di esempio per le variabili d'ambiente (credenziali database, passphrase di cifratura), da copiare in `.env` (non versionato, escluso da `.gitignore`)
+- `docker-compose.yml`: il servizio `app` monta `.env` tramite `env_file`, rendendo le variabili disponibili a SismaFramework via `getenv()`
+- `setup.sh`: genera automaticamente `.env` da `.env.example` con i valori raccolti interattivamente, incluso una passphrase di cifratura generata casualmente, prima dell'avvio dei container
+
+### Modificato
+- `docker-compose.yml`: i servizi `db` e `phpmyadmin` leggono le credenziali da variabili `${...}` (popolate da `.env`) invece di valori letterali, eliminando le credenziali in chiaro dal file committato
+- `setup.sh`: rimossa la sostituzione delle credenziali direttamente in `docker-compose.yml` (ora gestita tramite `.env`); rimosso il promemoria "se l'installer chiede le credenziali, usa questi valori" — non più necessario, l'installer le rileva automaticamente dall'ambiente
+- `README.md`: aggiornato il "Metodo manuale" e la sezione "Credenziali database" per riflettere il nuovo flusso basato su `.env`
+
+### Aggiornato
+- SismaFramework aggiornato alla versione `11.9.0`
+
+### Migrazione necessaria
+- Il "Metodo manuale" richiede ora un passaggio aggiuntivo: copiare `.env.example` in `.env` e compilarlo prima di `docker compose up -d`. Senza `.env`, l'avvio dei container fallisce (`env_file` non trovato). Il "Metodo automatico" (`setup.sh`) non richiede alcuna azione aggiuntiva: genera `.env` automaticamente.
+
 ## [1.4.0] - 2026-06-18
 
 ### Aggiunto
