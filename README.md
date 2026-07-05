@@ -76,15 +76,19 @@ Nessuna porta resta in ascolto sull'host: il traffico passa cifrato via SSH. L'I
 
 Le variabili `MAIL_*` in `.env` configurano il client SMTP dell'applicativo (es. PHPMailer):
 
-| Parametro   | Valore di default (sviluppo, `.env.example`) |
-|-------------|------------------------------------------------|
-| Host        | `mailpit` |
-| Porta       | `1025`    |
-| Cifratura   | `none`    |
-| Utente      | *(vuoto, Mailpit non richiede autenticazione)* |
-| Password    | *(vuoto)* |
+| Parametro    | Valore di default (sviluppo, `.env.example`) |
+|--------------|------------------------------------------------|
+| Host         | `mailpit` |
+| Porta        | `1025`    |
+| Cifratura    | `none`    |
+| Utente       | *(vuoto, Mailpit non richiede autenticazione)* |
+| Password     | *(vuoto)* |
+| From address | `noreply@skeletron-apache.localhost` (sostituito da `setup.sh` col dominio `.localhost` del nuovo progetto) |
+| From name    | `SkeletronApache` (sostituito da `setup.sh` col nome del progetto in PascalCase) |
 
-In produzione basta sostituire questi valori con quelli del provider SMTP reale nel file `.env`: il codice applicativo resta invariato.
+In produzione basta sostituire questi valori con quelli del provider SMTP reale nel file `.env`: il codice applicativo resta invariato. Note d'integrazione lato PHPMailer:
+- `SMTPAuth` va derivato (`true` se `MAIL_USERNAME`/`MAIL_PASSWORD` sono entrambe valorizzate, altrimenti `false`), non serve una variabile a parte
+- `MAIL_ENCRYPTION=none` va tradotto in stringa vuota per `SMTPSecure` (PHPMailer non accetta il valore letterale `"none"`)
 
 ## Backup del database (opzionale)
 

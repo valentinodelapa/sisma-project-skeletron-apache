@@ -10,6 +10,7 @@ cd "$SCRIPT_DIR"
 VARIANT="apache"
 OLD_SNAKE="skeletron_apache"
 OLD_KEBAB="skeletron-apache"
+OLD_PASCAL=""  # calcolato più sotto, dopo la definizione di to_pascal
 
 # ─── Colori ──────────────────────────────────────────────────────────────────
 B='\033[0;34m'; G='\033[0;32m'; Y='\033[1;33m'; R='\033[0;31m'; NC='\033[0m'
@@ -29,6 +30,8 @@ to_pascal() {
     echo "$1" | awk -F'[-_]' \
         '{for(i=1;i<=NF;i++) printf toupper(substr($i,1,1)) substr($i,2); print ""}'
 }
+
+OLD_PASCAL="$(to_pascal "$OLD_KEBAB")"
 
 echo ""
 echo "╔══════════════════════════════════════════╗"
@@ -174,6 +177,8 @@ rif ".env" "DATABASE_NAME=${OLD_SNAKE}"                            "DATABASE_NAM
 rif ".env" "DATABASE_USERNAME=db_user"                             "DATABASE_USERNAME=${DB_USER}"
 rif ".env" "DATABASE_PASSWORD=change_me_db_password"               "DATABASE_PASSWORD=${DB_PASS}"
 rif ".env" "ENCRYPTION_PASSPHRASE=change_me_encryption_passphrase" "ENCRYPTION_PASSPHRASE=${ENCRYPTION_PASSPHRASE}"
+rif ".env" "MAIL_FROM_ADDRESS=noreply@${OLD_KEBAB}.localhost"      "MAIL_FROM_ADDRESS=noreply@${NEW_KEBAB}.localhost"
+rif ".env" "MAIL_FROM_NAME=${OLD_PASCAL}"                          "MAIL_FROM_NAME=${PROJECT_PASCAL}"
 ok ".env generato (non versionato)"
 
 # ─── 6. Sottomoduli Git ──────────────────────────────────────────────────────

@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.0] - 2026-07-05
+
+### Aggiunto
+- `.env.example`: nuove variabili `MAIL_FROM_ADDRESS` e `MAIL_FROM_NAME` per il mittente delle email; in sviluppo puntano al dominio `.localhost` del progetto (`noreply@skeletron-apache.localhost`, `SkeletronApache`), sostituiti automaticamente da `setup.sh` col dominio e col nome del nuovo progetto
+
+### Modificato
+- `setup.sh`: calcola `OLD_PASCAL` (nome dello skeleton in PascalCase) e sostituisce `MAIL_FROM_ADDRESS`/`MAIL_FROM_NAME` col dominio e col nome (PascalCase) del nuovo progetto nello step di generazione del `.env`
+- `README.md`: documentate le variabili `MAIL_FROM_ADDRESS`/`MAIL_FROM_NAME` nella sezione "Configurazione SMTP", incluse le note d'integrazione lato PHPMailer per `SMTPAuth` (da derivare da `MAIL_USERNAME`/`MAIL_PASSWORD`, non una variabile a parte) e `SMTPSecure` (`MAIL_ENCRYPTION=none` va tradotto in stringa vuota)
+
 ## [2.0.0] - 2026-07-05
 
 ### Aggiunto
