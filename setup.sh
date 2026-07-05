@@ -148,12 +148,20 @@ rif "$NEW_SQL" "$OLD_SNAKE"  "$NEW_SNAKE"
 rif "$NEW_SQL" "'db_user'"   "'${DB_USER}'"
 ok "$OLD_SQL → $NEW_SQL (aggiornato)"
 
-# ─── 5. Aggiorna docker-compose.yml ──────────────────────────────────────────
+# ─── 5. Aggiorna i docker-compose*.yml ────────────────────────────────────────
 # Le credenziali non vengono più scritte qui: docker-compose.yml legge da .env
 # tramite ${...} ed env_file, quindi restano identiche per ogni progetto.
 rif "docker-compose.yml" "$OLD_SNAKE" "$NEW_SNAKE"
 rif "docker-compose.yml" "$OLD_KEBAB" "$NEW_KEBAB"
 ok "docker-compose.yml aggiornato"
+
+rif "docker-compose.dev.yml" "$OLD_SNAKE" "$NEW_SNAKE"
+rif "docker-compose.dev.yml" "$OLD_KEBAB" "$NEW_KEBAB"
+ok "docker-compose.dev.yml aggiornato"
+
+rif "docker-compose.backup.yml" "$OLD_SNAKE" "$NEW_SNAKE"
+rif "docker-compose.backup.yml" "$OLD_KEBAB" "$NEW_KEBAB"
+ok "docker-compose.backup.yml aggiornato"
 
 # ─── 5b. Genera il file .env ──────────────────────────────────────────────────
 # Generata qui (non richiesta all'utente) e scritta solo in .env, mai in un file
@@ -185,8 +193,8 @@ fi
 # ─── 7. Avvia Docker ──────────────────────────────────────────────────────────
 echo ""
 docker info > /dev/null 2>&1 || die "Docker non è in esecuzione. Avvia Docker Desktop e riprova."
-info "Avvio dei container Docker..."
-docker compose up -d
+info "Avvio dei container Docker (stack di sviluppo)..."
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
 ok "Container avviati"
 
 # ─── 8. Attendi che il DB sia pronto ─────────────────────────────────────────
@@ -247,6 +255,7 @@ ok "Setup completato!"
 echo ""
 printf "  Applicazione : http://%s.localhost\n"    "$NEW_KEBAB"
 printf "  phpMyAdmin   : http://db.%s.localhost\n" "$NEW_KEBAB"
+printf "  Mailpit      : http://mail.%s.localhost\n" "$NEW_KEBAB"
 echo ""
 warn "Credenziali e chiave di cifratura salvate in .env (non versionato). Conservane una copia."
 echo ""

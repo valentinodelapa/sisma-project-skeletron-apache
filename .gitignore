@@ -4,3 +4,4 @@ www/Cache/
 www/Logs/
 www/filesystemMedia/
 .env
+/backups/

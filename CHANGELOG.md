@@ -1,5 +1,34 @@
 # Changelog
 
+## [2.0.0] - 2026-07-05
+
+### Aggiunto
+- `docker-compose.dev.yml`: nuovo file con i servizi aggiuntivi per lo sviluppo, `phpmyadmin` e **`mailpit`** (mock SMTP, UI su `mail.skeletron-apache.localhost`, SMTP interno su porta `1025`)
+- `docker-compose.prod.yml`: nuovo file con `restart: unless-stopped` per i servizi core (`app`, `db`)
+- `Makefile`: scorciatoie `start-dev`, `stop-dev`, `start-prod`, `stop-prod` per evitare di digitare per esteso il comando `docker compose -f docker-compose.yml -f docker-compose.{dev,prod}.yml`
+- `.env.example`: nuove variabili `MAIL_HOST`, `MAIL_PORT`, `MAIL_ENCRYPTION`, `MAIL_USERNAME`, `MAIL_PASSWORD` per configurare il client SMTP dell'applicativo; i default puntano a Mailpit in sviluppo, in produzione basta sovrascriverli con le credenziali del provider reale
+- `docker-compose.backup.yml`: nuovo layer opzionale (non avviato da `start-dev`/`start-prod`) con un servizio `backup` (Alpine + `mariadb-client`) che esegue dump periodici di MariaDB via cron interno, li comprime in `./backups` (bind mount, persistente) e rimuove i dump più vecchi della retention configurata
+- `backup/`: `Dockerfile`, `entrypoint.sh` (genera il crontab da `BACKUP_SCHEDULE` e avvia `crond`) e `backup.sh` (dump + pulizia)
+- `.env.example`: nuove variabili `BACKUP_SCHEDULE` (default `0 3 * * *`) e `BACKUP_RETENTION_DAYS` (default `7`) per il servizio di backup opzionale
+- `Makefile`: scorciatoie `start-backup`/`stop-backup` (stack di produzione + backup)
+- `.gitignore`: esclusa la cartella `/backups/` (dump locali, mai versionati)
+
+### Modificato
+- `docker-compose.yml`: ridotto ai soli servizi core (`app` + `db`); `phpmyadmin` spostato in `docker-compose.dev.yml`
+- `setup.sh`: applica le sostituzioni del nome progetto anche a `docker-compose.dev.yml` e `docker-compose.backup.yml`; avvia lo stack di sviluppo con `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d` invece del comando semplice; il riepilogo finale include l'URL di Mailpit
+- `README.md`: documentata la suddivisione `docker-compose.yml` / `docker-compose.dev.yml` / `docker-compose.prod.yml` / `docker-compose.backup.yml`, il `Makefile`, la configurazione SMTP, la procedura di accesso al database in produzione tramite tunnel SSH (nessuna porta pubblicata sull'host) e il funzionamento del backup schedulato
+
+### Aggiornato
+- SismaFramework aggiornato alla versione `12.0.3`
+
+### Breaking
+- `docker compose up -d` (senza i flag `-f`) non avvia più `phpmyadmin` né altri servizi di sviluppo: usare `make start-dev` oppure `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`
+- SismaFramework aggiornato a una nuova major (`11.x` → `12.0.3`): verificare il changelog del framework per le modifiche incompatibili prima di aggiornare progetti esistenti
+
+### Migrazione necessaria
+- Progetti esistenti basati su questo skeleton: aggiungere un `docker-compose.dev.yml` equivalente (o adattare il proprio) per continuare ad avere `phpmyadmin` in locale, e aggiornare script/abitudini che lanciano `docker compose up -d` senza file di override
+- Rivedere il codice applicativo rispetto ai breaking change introdotti da SismaFramework `12.0.3`
+
 ## [1.5.0] - 2026-06-27
 
 ### Aggiunto
