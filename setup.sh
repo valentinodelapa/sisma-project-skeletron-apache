@@ -155,7 +155,6 @@ ok "$OLD_SQL → $NEW_SQL (aggiornato)"
 # Le credenziali non vengono più scritte qui: docker-compose.yml legge da .env
 # tramite ${...} ed env_file, quindi restano identiche per ogni progetto.
 rif "docker-compose.yml" "$OLD_SNAKE" "$NEW_SNAKE"
-rif "docker-compose.yml" "$OLD_KEBAB" "$NEW_KEBAB"
 ok "docker-compose.yml aggiornato"
 
 rif "docker-compose.dev.yml" "$OLD_SNAKE" "$NEW_SNAKE"

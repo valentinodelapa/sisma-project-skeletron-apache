@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0] - 2026-07-05
+
+### Modificato
+- `docker-compose.yml`: rimossi da `app` l'attacco a `web_network` e le label Traefik (dominio `.localhost`, router/servizio Traefik) — erano specifici del pattern di sviluppo, non hanno senso in produzione
+- `docker-compose.dev.yml`: `app` acquisisce qui l'attacco a `web_network` e le label Traefik, invariate rispetto a prima dello spostamento
+- `setup.sh`: rimossa la sostituzione ormai inutile di `OLD_KEBAB` su `docker-compose.yml` (il file base non contiene più il dominio kebab-case)
+- `README.md`: nuova sezione "Esposizione in produzione" che spiega le due opzioni tipiche (pubblicare la porta direttamente, oppure agganciarsi a un proprio reverse proxy/Traefik di produzione con dominio reale); aggiornate la tabella dei file compose e i prerequisiti
+
+### Breaking
+- Chi avvia `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d` (o `make start-prod`) oggi si aspetta `app` raggiungibile via Traefik/`web_network`: dopo questa modifica non lo è più senza intervento, perché quella configurazione era in realtà specifica dello sviluppo ed è stata spostata in `docker-compose.dev.yml`
+
+### Migrazione necessaria
+- Chi usa già questo skeleton in produzione: aggiungere a `docker-compose.prod.yml` la propria modalità di esposizione (pubblicazione porta o aggancio al proprio reverse proxy/Traefik reale) — vedi README, sezione "Esposizione in produzione"
+
 ## [2.1.0] - 2026-07-05
 
 ### Aggiunto

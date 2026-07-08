@@ -1,4 +1,14 @@
 services:
+  # --- SITO WEB: esposizione via Traefik (solo sviluppo) ---
+  app:
+    networks:
+      - web_network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.skeletron_apache_app.rule=Host(`skeletron-apache.localhost`)"
+      - "traefik.http.services.skeletron_apache_app.loadbalancer.server.port=80"
+      - "traefik.docker.network=web_network"
+
   # --- PHPMYADMIN ---
   phpmyadmin:
     image: phpmyadmin/phpmyadmin

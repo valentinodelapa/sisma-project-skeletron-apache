@@ -17,7 +17,7 @@ Skeleton Docker per progetti basati su SismaFramework con server web Apache.
 ## Prerequisiti
 
 *   Docker e Docker Compose
-*   Traefik in esecuzione sulla rete esterna `web_network`
+*   Per lo sviluppo: Traefik in esecuzione sulla rete esterna `web_network` (non richiesto in produzione, vedi "Esposizione in produzione")
 
 ## Ambienti: sviluppo e produzione
 
@@ -26,8 +26,8 @@ La configurazione Docker è divisa in tre file:
 | File                        | Contenuto                                                        |
 |-----------------------------|-------------------------------------------------------------------|
 | `docker-compose.yml`        | servizi core (`app` + `db`), comuni a ogni ambiente               |
-| `docker-compose.dev.yml`    | aggiunte per lo sviluppo: `phpmyadmin`, `mailpit` (mock SMTP)      |
-| `docker-compose.prod.yml`   | aggiunte per la produzione: `restart: unless-stopped` sui servizi core |
+| `docker-compose.dev.yml`    | aggiunte per lo sviluppo: esposizione di `app` via Traefik (`web_network`, dominio `.localhost`), `phpmyadmin`, `mailpit` (mock SMTP) |
+| `docker-compose.prod.yml`   | aggiunte per la produzione: `restart: unless-stopped` sui servizi core (esposizione pubblica da configurare a parte, vedi sezione dedicata) |
 | `docker-compose.backup.yml` | layer opzionale: backup schedulato del database (vedi sezione dedicata) |
 
 Il `Makefile` evita di scrivere per esteso il comando con i vari `-f`:
@@ -61,6 +61,13 @@ Le credenziali (e la passphrase di cifratura) sono lette dal file `.env` (non ve
 | Utente          | `db_user`          |
 | Password        | `change_me_db_password` |
 | Password root   | `change_me_root_password` |
+
+## Esposizione in produzione
+
+`docker-compose.yml` non contiene più l'attacco a `web_network` né le label Traefik per `app`: sono specifiche del pattern di sviluppo (Traefik condiviso in locale, dominio `.localhost`) e vivono solo in `docker-compose.dev.yml`. `docker-compose.prod.yml` non pubblica nessuna porta né configura un reverse proxy al posto loro: la modalità di esposizione dipende dall'infrastruttura reale del deploy, che lo skeleton non può indovinare. Due opzioni tipiche, da aggiungere direttamente a `docker-compose.prod.yml`:
+
+1.  **Pubblicare la porta direttamente** (`ports: ["80:80"]`), se il container è l'unico servizio sulla macchina — la terminazione TLS va gestita a parte (es. un proxy dedicato davanti).
+2.  **Agganciarsi al proprio reverse proxy/Traefik di produzione**, se il server ospita più progetti o serve TLS via Let's Encrypt: stessa meccanica di `docker-compose.dev.yml` (`networks` + `labels`), ma con la rete e il dominio reali al posto di `web_network`/`*.localhost`.
 
 ## Accesso al database in produzione
 

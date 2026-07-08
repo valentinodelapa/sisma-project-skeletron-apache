@@ -1,4 +1,8 @@
 services:
+  # L'esposizione pubblica di "app" non è definita qui: dipende dall'infrastruttura
+  # reale (pubblicare una porta, oppure agganciarsi a un proprio reverse proxy/
+  # Traefik di produzione con dominio reale e TLS). Vedi README, sezione
+  # "Esposizione in produzione".
   app:
     restart: unless-stopped
 
