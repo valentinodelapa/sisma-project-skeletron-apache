@@ -254,14 +254,31 @@ if [ ${#SUBMODULES[@]} -gt 0 ]; then
 fi
 
 # ─── 6b. Repository aggiuntivi come subtree ───────────────────────────────────
+# git subtree add richiede un working tree pulito (nessuna modifica non
+# committata in file tracciati o in index): a questo punto docker-compose*.yml
+# sono già stati riscritti e gli eventuali sottomoduli sono già in index, quindi
+# mettiamo tutto da parte con git stash e lo ripristiniamo subito dopo.
 if [ ${#SUBTREES[@]} -gt 0 ]; then
     echo ""
+    _stash_output=$(git stash push -m "setup.sh: modifiche pre-subtree" 2>&1) || die "Impossibile mettere da parte le modifiche pendenti (git stash): $_stash_output"
+    if [[ "$_stash_output" == *"No local changes to save"* ]]; then
+        _stash_created=0
+    else
+        _stash_created=1
+        ok "Modifiche pendenti messe temporaneamente da parte (git stash)"
+    fi
+
     info "Aggiungo repository come subtree..."
     for _s in "${SUBTREES[@]}"; do
         IFS='|' read -r _sub_url _sub_path _sub_branch _sub_squash_flag <<< "$_s"
         git subtree add --prefix="$_sub_path" "$_sub_url" "$_sub_branch" $_sub_squash_flag
         ok "Subtree aggiunto: $_sub_path"
     done
+
+    if [ "$_stash_created" -eq 1 ]; then
+        git stash pop
+        ok "Modifiche pendenti ripristinate"
+    fi
 fi
 
 # ─── 7. Avvia Docker ──────────────────────────────────────────────────────────

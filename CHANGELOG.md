@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.1] - 2026-07-10
+
+### Corretto
+- `setup.sh`: `git subtree add` richiede un working tree pulito, ma a quel punto dello script `docker-compose*.yml` sono già stati riscritti e gli eventuali sottomoduli sono già in index — l'aggiunta dei subtree falliva con "Working tree has modifications. Cannot add."; ora le modifiche pendenti vengono messe temporaneamente da parte con `git stash` prima del ciclo di `git subtree add` e ripristinate con `git stash pop` subito dopo (solo se lo stash è stato effettivamente creato)
+
 ## [2.3.0] - 2026-07-10
 
 ### Aggiunto
