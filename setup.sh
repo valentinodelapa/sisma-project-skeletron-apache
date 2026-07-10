@@ -105,6 +105,58 @@ if [[ "$_add_subs" =~ ^[sS]$ ]]; then
     done
 fi
 
+# ─── 1c. Repository aggiuntivi come subtree ───────────────────────────────────
+SUBTREES=()  # tuple "url|www/cartella|branch|squash_flag"
+
+echo ""
+read -rp "Aggiungere ulteriori repository come subtree in www/? [s/N]: " _add_subtrees
+if [[ "$_add_subtrees" =~ ^[sS]$ ]]; then
+    echo ""
+    info "I subtree verranno aggiunti in www/<nome-cartella>"
+    info "Lascia l'URL vuoto per terminare."
+    echo ""
+    while true; do
+        read -rp "  URL repository (o Invio per terminare): " _sub_url
+        _sub_url=$(echo "$_sub_url" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        [ -z "$_sub_url" ] && break
+        if ! echo "$_sub_url" | grep -qE '^(https?://|git@).+'; then
+            warn "URL non valido. Usa https://... o git@..."; continue
+        fi
+        while true; do
+            read -rp "  Nome cartella in www/: " _sub_folder
+            _sub_folder=$(echo "$_sub_folder" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+            if [ -z "$_sub_folder" ]; then
+                warn "Il nome della cartella non può essere vuoto."; continue
+            fi
+            if ! echo "$_sub_folder" | grep -qE '^[a-zA-Z][a-zA-Z0-9_-]*$'; then
+                warn "Usa solo lettere, cifre, trattini e underscore."; continue
+            fi
+            _dup=0
+            for _s in "${SUBMODULES[@]}"; do
+                [[ "${_s##*|}" == "www/$_sub_folder" ]] && _dup=1 && break
+            done
+            for _s in "${SUBTREES[@]}"; do
+                IFS='|' read -r _ _s_path _ _ <<< "$_s"
+                [[ "$_s_path" == "www/$_sub_folder" ]] && _dup=1 && break
+            done
+            [ "$_dup" -eq 1 ] && { warn "Cartella 'www/$_sub_folder' già aggiunta."; continue; }
+            break
+        done
+        read -rp "  Branch [main]: " _sub_branch
+        _sub_branch=$(echo "$_sub_branch" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        _sub_branch="${_sub_branch:-main}"
+        read -rp "  Usare --squash (storia compressa in un unico commit)? [S/n]: " _sub_squash
+        if [[ "$_sub_squash" =~ ^[nN]$ ]]; then
+            _sub_squash_flag=""
+        else
+            _sub_squash_flag="--squash"
+        fi
+        SUBTREES+=("${_sub_url}|www/${_sub_folder}|${_sub_branch}|${_sub_squash_flag}")
+        ok "  → www/$_sub_folder (branch: $_sub_branch)"
+        echo ""
+    done
+fi
+
 # ─── 2. Credenziali database ──────────────────────────────────────────────────
 echo ""
 echo "Credenziali database:"
@@ -133,6 +185,13 @@ if [ ${#SUBMODULES[@]} -gt 0 ]; then
     printf "  Sottomoduli :\n"
     for _s in "${SUBMODULES[@]}"; do
         printf "    %s\n" "${_s##*|}"
+    done
+fi
+if [ ${#SUBTREES[@]} -gt 0 ]; then
+    printf "  Subtree     :\n"
+    for _s in "${SUBTREES[@]}"; do
+        IFS='|' read -r _ _s_path _s_branch _ <<< "$_s"
+        printf "    %s (branch: %s)\n" "$_s_path" "$_s_branch"
     done
 fi
 echo "──────────────────────────────────────────────────"
@@ -192,6 +251,17 @@ if [ ${#SUBMODULES[@]} -gt 0 ]; then
     done
     git submodule update --init --recursive
     ok "Sottomoduli inizializzati"
+fi
+
+# ─── 6b. Repository aggiuntivi come subtree ───────────────────────────────────
+if [ ${#SUBTREES[@]} -gt 0 ]; then
+    echo ""
+    info "Aggiungo repository come subtree..."
+    for _s in "${SUBTREES[@]}"; do
+        IFS='|' read -r _sub_url _sub_path _sub_branch _sub_squash_flag <<< "$_s"
+        git subtree add --prefix="$_sub_path" "$_sub_url" "$_sub_branch" $_sub_squash_flag
+        ok "Subtree aggiunto: $_sub_path"
+    done
 fi
 
 # ─── 7. Avvia Docker ──────────────────────────────────────────────────────────

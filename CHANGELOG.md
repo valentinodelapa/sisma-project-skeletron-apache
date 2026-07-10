@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.0] - 2026-07-10
+
+### Aggiunto
+- `setup.sh`: supporto a repository Git aggiuntivi come subtree in `www/`, oltre e dopo i sottomoduli; durante il setup viene chiesto se aggiungerne, con raccolta interattiva di URL, nome cartella, branch (default `main`) e opzione `--squash`, validazione e deduplicazione (anche rispetto ai sottomoduli); i subtree vengono aggiunti subito dopo l'inizializzazione dei sottomoduli, prima dell'avvio di Docker
+
 ## [2.2.0] - 2026-07-05
 
 ### Modificato
