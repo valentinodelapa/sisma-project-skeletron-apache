@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.2] - 2026-07-12
+
+### Corretto
+- `setup.sh`: la correzione 2.3.1 restava insufficiente quando un sottomodulo già presente (es. `www/SismaFramework`) risultava puntare a un commit diverso da quello registrato nell'indice ("modified: www/... (new commits)") — `git stash` non mette da parte questo tipo di modifica (risponde "No local changes to save" senza fare nulla), mentre `ensure_clean` di `git-subtree` la rileva comunque (confronta con `git diff-index HEAD` senza `--ignore-submodules`), riproducendo lo stesso errore "Working tree has modifications. Cannot add." anche dopo lo stash; ora, prima dello stash, i sottomoduli vengono riallineati al commit registrato con `git submodule update --recursive`
+
 ## [2.3.1] - 2026-07-10
 
 ### Corretto

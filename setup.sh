@@ -258,8 +258,15 @@ fi
 # committata in file tracciati o in index): a questo punto docker-compose*.yml
 # sono già stati riscritti e gli eventuali sottomoduli sono già in index, quindi
 # mettiamo tutto da parte con git stash e lo ripristiniamo subito dopo.
+# NB: git stash NON mette da parte un sottomodulo il cui commit differisce da
+# quello registrato nell'indice ("modified: www/... (new commits)"): in tal caso
+# risponde "No local changes to save" senza fare nulla, e la successiva
+# ensure_clean di git-subtree (che confronta con git diff-index HEAD, senza
+# --ignore-submodules) fallirebbe comunque. Riallineiamo prima i sottomoduli
+# al commit registrato, così lo stash copre solo le modifiche "vere".
 if [ ${#SUBTREES[@]} -gt 0 ]; then
     echo ""
+    git submodule update --recursive
     _stash_output=$(git stash push -m "setup.sh: modifiche pre-subtree" 2>&1) || die "Impossibile mettere da parte le modifiche pendenti (git stash): $_stash_output"
     if [[ "$_stash_output" == *"No local changes to save"* ]]; then
         _stash_created=0
