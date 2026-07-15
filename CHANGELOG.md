@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.3.3] - 2026-07-14
+
+### Corretto
+- `setup.sh`: `ENCRYPTION_PASSPHRASE` veniva generata con una lunghezza fissa di 64 caratteri, incoerente con la chiave di 32 byte attesa da `AES-256-CBC` (`ENCRYPTION_ALGORITHM` in `Config/config.php`) — `Encryptor::encryptString`/`decryptString` passa la passphrase a `openssl_encrypt`/`decrypt` senza derivazione, quindi deve avere esattamente la lunghezza richiesta dal cifrario; ora `setup.sh` legge `ENCRYPTION_ALGORITHM` da `Config/config.php` e ne ricava la lunghezza della chiave (in byte) dal numero di bit nel nome del cifrario (es. `AES-256-CBC` → 32 byte, `AES-128-CBC` → 16 byte), così la chiave generata resta coerente anche se l'algoritmo configurato cambia
+
 ## [2.3.2] - 2026-07-12
 
 ### Corretto

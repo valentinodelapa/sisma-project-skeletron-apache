@@ -227,7 +227,26 @@ ok "docker-compose.backup.yml aggiornato"
 # ─── 5b. Genera il file .env ──────────────────────────────────────────────────
 # Generata qui (non richiesta all'utente) e scritta solo in .env, mai in un file
 # committato: SismaFramework la legge via getenv() in Config/configFramework.php.
-ENCRYPTION_PASSPHRASE="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 64 || true)"
+# La lunghezza della chiave dipende dall'algoritmo configurato in
+# Config/config.php (ENCRYPTION_ALGORITHM), letto da lì e non fissato qui:
+# Encryptor::encryptString/decryptString passa ENCRYPTION_PASSPHRASE a
+# openssl_encrypt/decrypt senza derivazione, quindi deve avere esattamente la
+# lunghezza attesa dal cifrario (es. AES-256-* → 32 byte, AES-128-* → 16 byte).
+CONFIG_FILE="www/SismaFramework/Config/config.php"
+[ -f "$CONFIG_FILE" ] || die "File di configurazione non trovato: $CONFIG_FILE"
+
+ENCRYPTION_ALGORITHM="$(sed -nE "s/^const ENCRYPTION_ALGORITHM = [\"']([^\"']+)[\"'];.*/\1/p" "$CONFIG_FILE")"
+[ -n "$ENCRYPTION_ALGORITHM" ] || die "Impossibile determinare ENCRYPTION_ALGORITHM da $CONFIG_FILE"
+
+KEY_BITS="$(echo "$ENCRYPTION_ALGORITHM" | grep -oE '[0-9]+' | head -n1)"
+case "$KEY_BITS" in
+    128|192|256) ;;
+    *) die "Lunghezza chiave non riconosciuta per l'algoritmo '$ENCRYPTION_ALGORITHM' (atteso un cifrario AES-<128|192|256>-<modalità>)." ;;
+esac
+KEY_BYTES=$((KEY_BITS / 8))
+
+ENCRYPTION_PASSPHRASE="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c "$KEY_BYTES" || true)"
+info "Chiave di cifratura generata per $ENCRYPTION_ALGORITHM (${KEY_BYTES} byte)"
 
 cp .env.example .env
 rif ".env" "DB_ROOT_PASSWORD=change_me_root_password"             "DB_ROOT_PASSWORD=${ROOT_PASS}"
