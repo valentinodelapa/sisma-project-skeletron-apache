@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.3.4] - 2026-07-15
+
+### Corretto
+- `setup.sh`: la correzione 2.3.2 restava insufficiente quando un sottomodulo già presente (es. `www/SismaFramework`) aveva una modifica *tracciata* ma non committata al proprio interno (non un disallineamento del commit puntato, ma un file modificato nel working tree del sottomodulo) — `git stash` non può in alcun modo mettere da parte modifiche interne al working tree di un sottomodulo, essendo un repository separato, mentre `ensure_clean` di `git-subtree` la rileva comunque tramite `git diff-index HEAD`, riproducendo lo stesso errore "Working tree has modifications. Cannot add." anche dopo il riallineamento del commit introdotto in 2.3.2; ora, prima dello stash, ogni sottomodulo viene riportato a uno stato realmente pristino con `git submodule foreach --recursive 'git reset --hard && git clean -fd'`
+- `setup.sh`: la validazione dell'URL per sottomoduli/subtree aggiuntivi accettava come SSH solo l'utente letterale `git@...` (la convenzione di GitHub/GitLab), rifiutando come "non valido" un URL SSH perfettamente funzionante verso un server con un altro utente (es. un server locale con utente dedicato, `zeus@host:percorso`) — git non richiede affatto che l'utente SSH si chiami `git`; la regex ora accetta anche `ssh://`, `git://` e qualsiasi utente in sintassi scp-like (`utente@host:percorso`)
+
 ## [2.3.3] - 2026-07-14
 
 ### Corretto

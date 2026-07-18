@@ -80,8 +80,8 @@ if [[ "$_add_subs" =~ ^[sS]$ ]]; then
         read -rp "  URL repository (o Invio per terminare): " _sub_url
         _sub_url=$(echo "$_sub_url" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
         [ -z "$_sub_url" ] && break
-        if ! echo "$_sub_url" | grep -qE '^(https?://|git@).+'; then
-            warn "URL non valido. Usa https://... o git@..."; continue
+        if ! echo "$_sub_url" | grep -qE '^(https?://|ssh://|git://|[A-Za-z0-9._-]+@).+'; then
+            warn "URL non valido. Usa https://..., ssh://..., git://... o utente@host:percorso"; continue
         fi
         while true; do
             read -rp "  Nome cartella in www/: " _sub_folder
@@ -119,8 +119,8 @@ if [[ "$_add_subtrees" =~ ^[sS]$ ]]; then
         read -rp "  URL repository (o Invio per terminare): " _sub_url
         _sub_url=$(echo "$_sub_url" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
         [ -z "$_sub_url" ] && break
-        if ! echo "$_sub_url" | grep -qE '^(https?://|git@).+'; then
-            warn "URL non valido. Usa https://... o git@..."; continue
+        if ! echo "$_sub_url" | grep -qE '^(https?://|ssh://|git://|[A-Za-z0-9._-]+@).+'; then
+            warn "URL non valido. Usa https://..., ssh://..., git://... o utente@host:percorso"; continue
         fi
         while true; do
             read -rp "  Nome cartella in www/: " _sub_folder
@@ -283,9 +283,19 @@ fi
 # ensure_clean di git-subtree (che confronta con git diff-index HEAD, senza
 # --ignore-submodules) fallirebbe comunque. Riallineiamo prima i sottomoduli
 # al commit registrato, così lo stash copre solo le modifiche "vere".
+# NB2: git stash non può in ogni caso mettere da parte modifiche INTERNE al
+# working tree di un sottomodulo (file modificati o non tracciati al suo
+# interno: è un repository separato). Su Windows, con core.autocrlf=true, un
+# sottomodulo appena clonato risulta spesso "sporco" subito dopo il checkout
+# per via della rinormalizzazione dei fine-riga, e ciò basta a far fallire
+# ensure_clean anche a stash riuscito. Riportiamo quindi ogni sottomodulo a
+# uno stato realmente pristino (reset + clean) prima dello stash: qui non c'è
+# lavoro dell'utente da preservare, sono appena stati clonati o sono quelli
+# già pinnati del framework.
 if [ ${#SUBTREES[@]} -gt 0 ]; then
     echo ""
     git submodule update --recursive
+    git submodule foreach --recursive 'git reset --hard && git clean -fd'
     _stash_output=$(git stash push -m "setup.sh: modifiche pre-subtree" 2>&1) || die "Impossibile mettere da parte le modifiche pendenti (git stash): $_stash_output"
     if [[ "$_stash_output" == *"No local changes to save"* ]]; then
         _stash_created=0
