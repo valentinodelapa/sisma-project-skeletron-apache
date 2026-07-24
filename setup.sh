@@ -321,7 +321,7 @@ fi
 echo ""
 docker info > /dev/null 2>&1 || die "Docker non è in esecuzione. Avvia Docker Desktop e riprova."
 info "Avvio dei container Docker (stack di sviluppo)..."
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile internal-db up -d
 ok "Container avviati"
 
 # ─── 8. Attendi che il DB sia pronto ─────────────────────────────────────────

@@ -25,7 +25,7 @@ La configurazione Docker è divisa in tre file:
 
 | File                        | Contenuto                                                        |
 |-----------------------------|-------------------------------------------------------------------|
-| `docker-compose.yml`        | servizi core (`app` + `db`), comuni a ogni ambiente               |
+| `docker-compose.yml`        | servizi core (`app` + `db`), comuni a ogni ambiente. `db` è dietro il profilo `internal-db` (vedi "Database interno o esterno") |
 | `docker-compose.dev.yml`    | aggiunte per lo sviluppo: esposizione di `app` via Traefik (`web_network`, dominio `.localhost`), `phpmyadmin`, `mailpit` (mock SMTP) |
 | `docker-compose.prod.yml`   | aggiunte per la produzione: `restart: unless-stopped` sui servizi core (esposizione pubblica da configurare a parte, vedi sezione dedicata) |
 | `docker-compose.backup.yml` | layer opzionale: backup schedulato del database (vedi sezione dedicata) |
@@ -33,13 +33,17 @@ La configurazione Docker è divisa in tre file:
 Il `Makefile` evita di scrivere per esteso il comando con i vari `-f`:
 
 ```bash
-make start-dev    # docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
-make stop-dev     # docker compose -f docker-compose.yml -f docker-compose.dev.yml down
-make start-prod   # docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-make stop-prod    # docker compose -f docker-compose.yml -f docker-compose.prod.yml down
-make start-backup # docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.backup.yml up -d
-make stop-backup  # docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.backup.yml down
+make start-dev              # docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile internal-db up -d
+make stop-dev                # docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile internal-db down
+make start-prod              # docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile internal-db up -d
+make stop-prod                # docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile internal-db down
+make start-prod-external-db  # docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+make stop-prod-external-db   # docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+make start-backup            # docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.backup.yml --profile internal-db up -d
+make stop-backup             # docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.backup.yml --profile internal-db down
 ```
+
+I target `*-external-db` avviano lo stack senza il servizio `db` interno: usarli quando il database è gestito esternamente (RDS, MariaDB/MySQL managed, ecc.), puntando `DATABASE_HOST`/`DATABASE_PORT` in `.env` all'endpoint reale.
 
 ## Avvio (sviluppo)
 
@@ -62,6 +66,17 @@ Le credenziali (e la passphrase di cifratura) sono lette dal file `.env` (non ve
 | Password        | `change_me_db_password` |
 | Password root   | `change_me_root_password` |
 
+## Database interno o esterno
+
+Il servizio `db` (container MariaDB) è dietro il profilo Compose `internal-db`, non attivo di default. Due scenari:
+
+*   **Database interno** (container MariaDB gestito da questo stack): usare i target Make standard (`start-dev`, `start-prod`, `start-backup`), che attivano il profilo con `--profile internal-db`. È il comportamento di sempre, invariato.
+*   **Database esterno** (gestito, es. RDS, MariaDB/MySQL managed, un server dedicato): usare `make start-prod-external-db` / `make stop-prod-external-db`, che avviano lo stack senza il container `db`. In questo caso in `.env` vanno impostati `DATABASE_HOST`/`DATABASE_PORT` con l'endpoint reale (e le credenziali fornite dal provider) — l'applicativo li legge comunque da lì, nessuna modifica al codice.
+
+`phpMyAdmin` (solo sviluppo) è anch'esso dietro `internal-db`, dato che punta al container `db`: non ha senso con un database esterno in dev; per lo sviluppo si assume comunque database interno.
+
+Il servizio `backup` (`docker-compose.backup.yml`) **non** dipende dal container `db`: esegue `mariadb-dump` contro `DATABASE_HOST` letto da `.env`, quindi funziona invariato anche puntando a un database esterno, a patto di avere le credenziali root necessarie al dump (il target `make start-backup` attiva comunque il profilo `internal-db` perché il caso d'uso più comune è il backup del proprio container; per un database esterno lanciare il comando `docker compose` equivalente senza `--profile`).
+
 ## Esposizione in produzione
 
 `docker-compose.yml` non contiene più l'attacco a `web_network` né le label Traefik per `app`: sono specifiche del pattern di sviluppo (Traefik condiviso in locale, dominio `.localhost`) e vivono solo in `docker-compose.dev.yml`. `docker-compose.prod.yml` non pubblica nessuna porta né configura un reverse proxy al posto loro: la modalità di esposizione dipende dall'infrastruttura reale del deploy, che lo skeleton non può indovinare. Due opzioni tipiche, da aggiungere direttamente a `docker-compose.prod.yml`:
@@ -71,7 +86,7 @@ Le credenziali (e la passphrase di cifratura) sono lette dal file `.env` (non ve
 
 ## Accesso al database in produzione
 
-In produzione non è presente phpMyAdmin e il servizio `db` non pubblica alcuna porta sull'host: è raggiungibile solo dalla rete Docker interna. Per un accesso occasionale con un client grafico (es. MySQL Workbench):
+Questa sezione vale solo per il database interno (profilo `internal-db`); con un database esterno l'accesso dipende dal provider. In produzione non è presente phpMyAdmin e il servizio `db` non pubblica alcuna porta sull'host: è raggiungibile solo dalla rete Docker interna. Per un accesso occasionale con un client grafico (es. MySQL Workbench):
 
 1.  Trova l'IP interno del container: `docker inspect skeletron_apache_db | grep IPAddress`
 2.  Apri un tunnel SSH verso il server puntato a quell'IP: `ssh -L 3306:<ip_interno_db>:3306 utente@server`
@@ -135,7 +150,7 @@ Lo script chiederà il nome del progetto (in snake\_case o kebab-case) e le cred
 1.  Scarica la release desiderata
 2.  Rinomina `skeletron_apache.sql` con il nome del tuo progetto e aggiorna i riferimenti in `docker-compose.yml`, `docker-compose.dev.yml` **e `docker-compose.backup.yml`**
 3.  Copia `.env.example` in `.env` e aggiorna le credenziali del database (e la passphrase di cifratura) lì, oltre che nel file `.sql` rinominato
-4.  Esegui `make start-dev` (equivalente a `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d`)
+4.  Esegui `make start-dev` (equivalente a `docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile internal-db up -d`)
 5.  Avvia l'installazione con il comando `sisma install` (le credenziali nel container sono già configurate tramite `.env`: l'installer salta automaticamente la richiesta interattiva)
 
-Per l'avvio in produzione, usare invece `make start-prod` (senza phpMyAdmin e Mailpit), oppure `make start-backup` per includere anche il backup schedulato del database.
+Per l'avvio in produzione, usare invece `make start-prod` (senza phpMyAdmin e Mailpit, con database interno) o `make start-prod-external-db` (database gestito esternamente, vedi "Database interno o esterno"), oppure `make start-backup` per includere anche il backup schedulato del database interno.

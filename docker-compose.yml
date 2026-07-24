@@ -17,6 +17,8 @@ services:
   db:
     image: mariadb:latest
     container_name: skeletron_apache_db
+    profiles:
+      - internal-db
     environment:
       MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MARIADB_DATABASE: ${DATABASE_NAME}

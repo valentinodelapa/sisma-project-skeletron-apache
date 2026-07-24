@@ -2,7 +2,7 @@
     "name": "valentinodelapa/sisma-skeletron-apache",
     "description": "Skeleton project for SismaFramework with Apache web server",
     "type": "project",
-    "version": "2.3.4",
+    "version": "2.4.0",
     "license": "MIT",
     "authors": [
         {

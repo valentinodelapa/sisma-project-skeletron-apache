@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.4.0] - 2026-07-24
+
+### Aggiunto
+- `docker-compose.yml`: il servizio `db` (MariaDB) è ora dietro il profilo Compose `internal-db`, non attivo di default — permette di avviare lo stack senza database interno quando questo è gestito esternamente (es. RDS, MariaDB/MySQL managed)
+- `docker-compose.dev.yml`: anche `phpmyadmin` è dietro `internal-db` (punta al container `db`, non ha senso avviarlo senza)
+- `Makefile`: nuovi target `start-prod-external-db`/`stop-prod-external-db` (stack senza database interno); `start-dev`/`stop-dev`/`start-prod`/`stop-prod`/`start-backup`/`stop-backup` ora passano `--profile internal-db` per preservare il comportamento precedente
+- `setup.sh`: l'avvio dello stack di sviluppo ora passa `--profile internal-db`
+- `README.md`: nuova sezione "Database interno o esterno" che spiega i due scenari e i target Make corrispondenti; aggiornate tabella dei file compose, blocco comandi Make e sezione "Accesso al database in produzione"
+
+### Breaking
+- Chi avvia `docker compose` direttamente (senza passare da `make` e senza `--profile internal-db`) non vedrà più partire il servizio `db`, dato che ora è opt-in tramite profilo
+
+### Migrazione necessaria
+- Aggiornare script/pipeline che invocano `docker compose` direttamente aggiungendo `--profile internal-db` per mantenere il database interno come prima di questa modifica
+
 ## [2.3.4] - 2026-07-15
 
 ### Corretto

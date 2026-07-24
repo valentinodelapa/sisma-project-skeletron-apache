@@ -13,6 +13,8 @@ services:
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: skeletron_apache_pma
+    profiles:
+      - internal-db
     environment:
       PMA_HOST: skeletron_apache_db
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
