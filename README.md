@@ -112,6 +112,18 @@ In produzione basta sostituire questi valori con quelli del provider SMTP reale 
 - `SMTPAuth` va derivato (`true` se `MAIL_USERNAME`/`MAIL_PASSWORD` sono entrambe valorizzate, altrimenti `false`), non serve una variabile a parte
 - `MAIL_ENCRYPTION=none` va tradotto in stringa vuota per `SMTPSecure` (PHPMailer non accetta il valore letterale `"none"`)
 
+## Limiti PHP (upload, memoria, timeout)
+
+Le variabili in `.env` configurano i limiti dell'engine PHP. `docker-entrypoint.sh` le legge ad ogni avvio del container e genera `/usr/local/etc/php/conf.d/limits.ini`: `upload_max_filesize`, `post_max_size` e `max_input_time` sono direttive `PHP_INI_PERDIR`, quindi non possono essere impostate a runtime dall'applicativo (`ini_set()`/`getenv()`) ma solo tramite un file ini letto all'avvio.
+
+| Variabile             | Default (`.env.example`) | Significato |
+|------------------------|---------------------------|-------------|
+| `UPLOAD_MAX_FILESIZE`  | `10M`                     | dimensione massima di un singolo file caricato |
+| `POST_MAX_SIZE`        | `12M`                     | dimensione massima dell'intera richiesta POST (deve restare >= `UPLOAD_MAX_FILESIZE`, con margine per l'overhead multipart) |
+| `MEMORY_LIMIT`         | `256M`                    | memoria massima per singola richiesta PHP |
+| `MAX_EXECUTION_TIME`   | `60`                      | secondi massimi di esecuzione dello script |
+| `MAX_INPUT_TIME`       | `60`                      | secondi massimi per il parsing dei dati in ingresso (upload compresi) |
+
 ## Backup del database (opzionale)
 
 `docker-compose.backup.yml` aggiunge un servizio `backup` che esegue dump periodici di MariaDB; è un layer a parte, va incluso esplicitamente (`make start-backup`) e non parte con `start-dev`/`start-prod`.

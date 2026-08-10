@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.5.0] - 2026-08-10
+
+### Aggiunto
+- `.env`: nuove variabili `UPLOAD_MAX_FILESIZE`, `POST_MAX_SIZE`, `MEMORY_LIMIT`, `MAX_EXECUTION_TIME`, `MAX_INPUT_TIME` per configurare i limiti PHP (upload, memoria, timeout) senza toccare l'immagine
+- `docker-entrypoint.sh`: renderizza `php-limits.ini.template` in `/usr/local/etc/php/conf.d/limits.ini` ad ogni avvio del container, con default di fallback se le variabili non sono definite in `.env` — necessario perché `upload_max_filesize`, `post_max_size` e `max_input_time` sono direttive `PHP_INI_PERDIR`, non impostabili a runtime dall'applicativo via `ini_set()`/`getenv()`
+- `Dockerfile`: aggiunta la dipendenza `gettext-base` (fornisce `envsubst`, usato da `docker-entrypoint.sh`)
+- `README.md`: nuova sezione "Limiti PHP (upload, memoria, timeout)" con la tabella dei default
+- `setup.sh`: a fine installazione rimuove i file specifici dello skeleton non più utili nel progetto generato (`skeletron_apache.sql` originale, `.github/`, `CHANGELOG.md`, `composer.json` di root) — stessi file già esclusi dallo zip generato da `.github/workflows/release.yml`, ora il flusso `git clone` + `setup.sh` produce lo stesso risultato "pulito" di quello via zip di release
+
 ## [2.4.0] - 2026-07-24
 
 ### Aggiunto

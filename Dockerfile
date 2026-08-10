@@ -1,7 +1,8 @@
 FROM php:8.5-apache
 
-# Dipendenze di sistema
-RUN apt-get update && apt-get install -y unzip git libzip-dev libpng-dev libjpeg-dev libfreetype6-dev && rm -rf /var/lib/apt/lists/*
+# Dipendenze di sistema (gettext-base per envsubst, usato in docker-entrypoint.sh
+# per renderizzare i limiti PHP da .env)
+RUN apt-get update && apt-get install -y unzip git libzip-dev libpng-dev libjpeg-dev libfreetype6-dev gettext-base && rm -rf /var/lib/apt/lists/*
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -15,6 +16,7 @@ RUN a2enmod rewrite
 # COPIA FORZATA DELLA CONFIGURAZIONE
 COPY vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+COPY php-limits.ini.template /usr/local/etc/php/conf.d/limits.ini.template
 
 # Script di avvio per impostare i permessi
 COPY docker-entrypoint.sh /usr/local/bin/

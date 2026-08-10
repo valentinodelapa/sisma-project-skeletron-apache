@@ -376,6 +376,17 @@ info "Eseguo composer install in /var/www/html/ ..."
 docker exec "$APP_CONTAINER" bash -c "cd /var/www/html && composer install"
 ok "Dipendenze Composer installate"
 
+# ─── 11. Pulizia file specifici dello skeleton ────────────────────────────────
+# Stessi file già esclusi dallo zip generato da .github/workflows/release.yml:
+# hanno senso solo nel repository dello skeleton (versionamento, CI di release,
+# metadata Packagist), non nel progetto generato. Il .sql originale è superato
+# dalla copia rinominata al passo 4.
+rm -f "$OLD_SQL"
+rm -rf .github
+rm -f CHANGELOG.md
+rm -f composer.json
+ok "File specifici dello skeleton rimossi ($OLD_SQL, .github/, CHANGELOG.md, composer.json)"
+
 # ─── Fine ─────────────────────────────────────────────────────────────────────
 echo ""
 ok "Setup completato!"
