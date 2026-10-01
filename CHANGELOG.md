@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.6.0] - 2026-10-01
+
+### Modificato
+- `setup.sh`: le credenziali del database non vengono più chieste all'utente — password root e password dell'utente applicativo sono generate casualmente (32 caratteri alfanumerici, scritte solo in `.env`) e l'utente applicativo è `<nome_progetto>_user`; il database creato dallo script è sempre il container MariaDB interno, quindi non c'era nulla da far combaciare con credenziali esistenti
+- `setup.sh`: il controllo che Docker sia in esecuzione è anticipato all'avvio dello script, prima di qualsiasi domanda o modifica ai file
+- `setup.sh`: se il volume `<progetto Compose>_db_data` esiste già (es. setup precedente interrotto nella stessa cartella) lo script lo segnala e propone di eliminarlo: MariaDB applica credenziali e script di init solo a volume vuoto, quindi con le nuove credenziali l'attesa del database andrebbe in timeout
+- `setup.sh`: il riepilogo finale indica utente del database e variabili di `.env` in cui trovare le password
+
+### Corretto
+- `skeletron_apache.sql`: l'utente applicativo aveva di fatto `ALL PRIVILEGES` sullo schema, non solo DML — l'entrypoint dell'immagine MariaDB (con `MARIADB_USER` + `MARIADB_DATABASE`) gli assegna `GRANT ALL` sul nome escapato dello schema prima di eseguire lo script di init, e la `GRANT` DML si aggiungeva senza restringere nulla (la `REVOKE ... ON skeletron_apache.*` rimossa in 1.0.5 falliva per lo stesso motivo: puntava al nome non escapato); ora lo script esegue `REVOKE ALL PRIVILEGES, GRANT OPTION FROM` l'utente prima della `GRANT` DML. Lo script di init gira solo alla creazione del volume, quindi i progetti esistenti mantengono i privilegi attuali finché il volume non viene reinizializzato
+
 ## [2.5.0] - 2026-08-10
 
 ### Aggiunto

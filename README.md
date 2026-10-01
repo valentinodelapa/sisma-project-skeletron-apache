@@ -66,6 +66,10 @@ Le credenziali (e la passphrase di cifratura) sono lette dal file `.env` (non ve
 | Password        | `change_me_db_password` |
 | Password root   | `change_me_root_password` |
 
+Con `setup.sh` non vanno scelte a mano: l'utente applicativo diventa `<nome_progetto>_user` e le due password vengono generate casualmente (32 caratteri alfanumerici) e scritte solo in `.env`.
+
+L'utente applicativo ha soli permessi DML (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) sullo schema del progetto; le operazioni di struttura (DDL) vanno eseguite come `root`.
+
 ## Database interno o esterno
 
 Il servizio `db` (container MariaDB) è dietro il profilo Compose `internal-db`, non attivo di default. Due scenari:
@@ -155,7 +159,7 @@ Esegui lo script interattivo dalla root del progetto:
 bash setup.sh
 ```
 
-Lo script chiederà il nome del progetto (in snake\_case o kebab-case) e le credenziali del database, aggiornerà tutti i file di configurazione, avvierà lo stack di sviluppo (`docker-compose.yml` + `docker-compose.dev.yml`) e lancerà `sisma install` automaticamente.
+Lo script chiederà il nome del progetto (in snake\_case o kebab-case), genererà le credenziali del database (vedi "Credenziali database"), aggiornerà tutti i file di configurazione, avvierà lo stack di sviluppo (`docker-compose.yml` + `docker-compose.dev.yml`) e lancerà `sisma install` automaticamente.
 
 ### Metodo manuale
 

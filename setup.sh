@@ -25,6 +25,12 @@ rif() {   # rif <file> <da_cercare> <sostituto>
     sed "s|${2}|${3}|g" "$1" > "$tmp" && mv "$tmp" "$1"
 }
 
+# ─── Segreto casuale alfanumerico ─────────────────────────────────────────────
+# Solo [A-Za-z0-9]: i valori passano per rif (sed con | come delimitatore).
+gen_secret() {   # gen_secret <lunghezza>
+    LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c "$1" || true
+}
+
 # ─── snake_case / kebab-case → PascalCase ─────────────────────────────────────
 to_pascal() {
     echo "$1" | awk -F'[-_]' \
@@ -38,6 +44,8 @@ echo "╔═══════════════════════�
 echo "║   Sisma Skeleton Setup — Apache          ║"
 echo "╚══════════════════════════════════════════╝"
 echo ""
+
+docker info > /dev/null 2>&1 || die "Docker non è in esecuzione. Avvia Docker Desktop e riprova."
 
 # ─── 1. Nome del progetto ─────────────────────────────────────────────────────
 while true; do
@@ -158,19 +166,31 @@ if [[ "$_add_subtrees" =~ ^[sS]$ ]]; then
 fi
 
 # ─── 2. Credenziali database ──────────────────────────────────────────────────
-echo ""
-echo "Credenziali database:"
-echo ""
-read -rsp "  Password root         [root_password]: " ROOT_PASS
-echo ""
-ROOT_PASS="${ROOT_PASS:-root_password}"
+# Generate qui, non richieste all'utente: il database è sempre il container
+# MariaDB interno di questo stack (profilo internal-db), che crea root e utente
+# applicativo da .env alla prima inizializzazione del volume. Per un database
+# esterno (solo produzione) le credenziali si impostano a mano in .env.
+ROOT_PASS="$(gen_secret 32)"
+DB_USER="${NEW_SNAKE}_user"
+DB_PASS="$(gen_secret 32)"
 
-read -rp  "  Username utente guest [db_user]:       " DB_USER
-DB_USER="${DB_USER:-db_user}"
-
-read -rsp "  Password utente guest [db_password]:   " DB_PASS
-echo ""
-DB_PASS="${DB_PASS:-db_password}"
+# ─── 2b. Volume del database già esistente ────────────────────────────────────
+# MariaDB applica credenziali e script di init solo quando il volume è vuoto:
+# se db_data esiste già (es. setup precedente interrotto in questa cartella),
+# le nuove credenziali non corrisponderebbero e l'attesa del DB andrebbe in
+# timeout. Il volume si chiama <progetto Compose>_db_data, dove il progetto è
+# il nome della cartella normalizzato come fa Compose (minuscolo, [a-z0-9_-]).
+COMPOSE_PROJECT="${COMPOSE_PROJECT_NAME:-$(basename "$SCRIPT_DIR" | tr '[:upper:]' '[:lower:]' | tr -cd 'a-z0-9_-')}"
+DB_VOLUME="${COMPOSE_PROJECT}_db_data"
+RESET_DB_VOLUME=0
+if docker volume inspect "$DB_VOLUME" > /dev/null 2>&1; then
+    echo ""
+    warn "Il volume Docker '$DB_VOLUME' esiste già (probabilmente da un setup precedente)."
+    warn "MariaDB non reinizializzerebbe le credenziali: va eliminato, insieme a tutti i dati che contiene."
+    read -rp "Eliminare il volume '$DB_VOLUME' prima di avviare i container? [s/N]: " _reset_volume
+    [[ "$_reset_volume" =~ ^[sS]$ ]] || die "Setup interrotto: elimina o rinomina il volume '$DB_VOLUME' e riprova."
+    RESET_DB_VOLUME=1
+fi
 
 # ─── 3. Riepilogo e conferma ──────────────────────────────────────────────────
 echo ""
@@ -178,9 +198,9 @@ echo "────────────────────────�
 printf "  DB / slug   : %s\n"      "$NEW_SNAKE"
 printf "  App URL     : http://%s.localhost\n"    "$NEW_KEBAB"
 printf "  phpMyAdmin  : http://db.%s.localhost\n" "$NEW_KEBAB"
-printf "  DB root     : %s\n"      "[nascosta]"
 printf "  DB user     : %s\n"      "$DB_USER"
-printf "  DB password : %s\n"      "[nascosta]"
+printf "  DB password : %s\n"      "[generate, salvate in .env]"
+[ "$RESET_DB_VOLUME" -eq 1 ] && printf "  Volume DB   : %s (verrà eliminato)\n" "$DB_VOLUME"
 if [ ${#SUBMODULES[@]} -gt 0 ]; then
     printf "  Sottomoduli :\n"
     for _s in "${SUBMODULES[@]}"; do
@@ -245,7 +265,7 @@ case "$KEY_BITS" in
 esac
 KEY_BYTES=$((KEY_BITS / 8))
 
-ENCRYPTION_PASSPHRASE="$(LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c "$KEY_BYTES" || true)"
+ENCRYPTION_PASSPHRASE="$(gen_secret "$KEY_BYTES")"
 info "Chiave di cifratura generata per $ENCRYPTION_ALGORITHM (${KEY_BYTES} byte)"
 
 cp .env.example .env
@@ -319,7 +339,15 @@ fi
 
 # ─── 7. Avvia Docker ──────────────────────────────────────────────────────────
 echo ""
-docker info > /dev/null 2>&1 || die "Docker non è in esecuzione. Avvia Docker Desktop e riprova."
+if [ "$RESET_DB_VOLUME" -eq 1 ]; then
+    # Un volume in uso da un container (anche fermo) non è eliminabile
+    _vol_containers=$(docker ps -aq --filter "volume=$DB_VOLUME")
+    if [ -n "$_vol_containers" ]; then
+        docker rm -f $_vol_containers > /dev/null
+    fi
+    docker volume rm "$DB_VOLUME" > /dev/null
+    ok "Volume '$DB_VOLUME' eliminato"
+fi
 info "Avvio dei container Docker (stack di sviluppo)..."
 docker compose -f docker-compose.yml -f docker-compose.dev.yml --profile internal-db up -d
 ok "Container avviati"
@@ -394,6 +422,8 @@ echo ""
 printf "  Applicazione : http://%s.localhost\n"    "$NEW_KEBAB"
 printf "  phpMyAdmin   : http://db.%s.localhost\n" "$NEW_KEBAB"
 printf "  Mailpit      : http://mail.%s.localhost\n" "$NEW_KEBAB"
+printf "  DB utente    : %s (password: DATABASE_PASSWORD in .env)\n" "$DB_USER"
+printf "  DB root      : root (password: DB_ROOT_PASSWORD in .env)\n"
 echo ""
 warn "Credenziali e chiave di cifratura salvate in .env (non versionato). Conservane una copia."
 echo ""
